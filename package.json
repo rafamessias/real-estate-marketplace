@@ -1,5 +1,5 @@
 {
-  "name": "capstone",
+  "name": "real-estate-nft",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,14 +8,12 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "pk <pkrasam@gmail.com> (https://ipfs.infura.io/ipfs/QmSXiR9Khm3yo1J67nUopvVBxFJ8YGN2fUGZ34Etr3m92x/)",
+  "author": "Rafael Messias",
   "license": "MIT",
   "devDependencies": {
     "lite-server": "2.4.0"
   },
   "dependencies": {
-    "openzeppelin-solidity": "^2.2.0",
-    "solc": "^0.5.2",
-    "solc-js": "^0.5.2"
+    "openzeppelin-solidity": "^4.6.0"
   }
 }
