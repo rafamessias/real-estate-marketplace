@@ -1,3 +1,4 @@
-def main(private field <a_field_name>, field <b_field_name>) -> (field):
-  field <result_field_name> = if <a_field_name> * <a_field_name> == <b_field_name> then 1 else 0 fi
-  return <result_field_name>
+def main(private field field_a, field field_b) -> field {
+  field result = field_a * field_a == field_b ? 1 : 0;
+  return result;
+}

@@ -1,32 +1,75 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.15;
+pragma solidity >=0.8.0;
 
-import "openzeppelin-solidity/contracts/utils/Address.sol";
-import "openzeppelin-solidity/contracts/drafts/Counters.sol";
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "openzeppelin-solidity/contracts/token/ERC721/IERC721Receiver.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "./Oraclize.sol";
 
 contract Ownable {
-    //  TODO's
-    //  1) create a private '_owner' variable of type address with a public getter function
-    //  2) create an internal constructor that sets the _owner var to the creater of the contract
-    //  3) create an 'onlyOwner' modifier that throws if called by any account other than the owner.
-    //  4) fill out the transferOwnership function
-    //  5) create an event that emits anytime ownerShip is transfered (including in the constructor)
+    // Storage variables
+    address private s_owner;
+
+    constructor() {
+        s_owner = msg.sender;
+        emit OwnerTransferred(address(0), msg.sender);
+    }
+
+    // Events ################################################
+    event OwnerTransferred(address indexed oldOnwer, address indexed newOwner);
+
+    // Modifiers #############################################
+    modifier onlyOwner() {
+        require(msg.sender == s_owner, "Only contract owner can call it");
+        _;
+    }
+
+    // Utility functions ####################################
+    function contractOwner() public view returns (address) {
+        return s_owner;
+    }
 
     function transferOwnership(address newOwner) public onlyOwner {
-        // TODO add functionality to transfer control of the contract to a newOwner.
-        // make sure the new owner is a real address
+        require(newOwner != address(0), "New owner need to be a real address");
+        address oldOnwer = s_owner;
+        s_owner = newOwner;
+        emit OwnerTransferred(oldOnwer, newOwner);
     }
 }
 
-//  TODO's: Create a Pausable contract that inherits from the Ownable contract
-//  1) create a private '_paused' variable of type bool
-//  2) create a public setter using the inherited onlyOwner modifier
-//  3) create an internal constructor that sets the _paused variable to false
-//  4) create 'whenNotPaused' & 'paused' modifier that throws in the appropriate situation
-//  5) create a Paused & Unpaused event that emits the address that triggered the event
+contract Pausable is Ownable {
+    // Storage variables
+    bool private s_paused;
+
+    constructor() {
+        s_paused = false;
+    }
+
+    event Paused(address indexed trigger);
+    event Unpaused(address indexed trigger);
+
+    // Modifiers #####################################
+
+    modifier whenNotPaused() {
+        require(s_paused == false, "Contract is NOT paused");
+        _;
+    }
+
+    modifier paused() {
+        require(s_paused == true, "Contract is paused");
+        _;
+    }
+
+    function setPaused(bool _paused) public onlyOwner {
+        s_paused = _paused;
+        if (_paused) {
+            emit Paused(msg.sender);
+        } else {
+            emit Unpaused(msg.sender);
+        }
+    }
+}
 
 contract ERC165 {
     bytes4 private constant _INTERFACE_ID_ERC165 = 0x01ffc9a7;
@@ -104,7 +147,7 @@ contract ERC721 is Pausable, ERC165 {
     // Mapping from owner to number of owned token
     // IMPORTANT: this mapping uses Counters lib which is used to protect overflow when incrementing/decrementing a uint
     // use the following functions when interacting with Counters: increment(), decrement(), and current() to get the value
-    // see: https://github.com/OpenZeppelin/openzeppelin-solidity/blob/master/contracts/drafts/Counters.sol
+    // see: https://github.com/OpenZeppelin/@openzeppelin/blob/master/contracts/drafts/Counters.sol
     mapping(address => Counters.Counter) private _ownedTokensCount;
 
     // Mapping from owner to operator approvals
