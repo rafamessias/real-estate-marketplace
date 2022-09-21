@@ -270,10 +270,9 @@ contract ERC721 is Pausable, ERC165 {
     }
 
     // @dev Internal function to mint a new token
-    // TIP: remember the functions to use for Counters. you can refresh yourself with the link above
     function _mint(address to, uint256 tokenId) internal virtual {
         require(to != address(0), "Invalid address");
-        require(_tokenOwner[tokenId] != address(0), "Token Id already exists");
+        require(_exists(tokenId) == false, "Token Id already exists");
 
         _tokenOwner[tokenId] = to;
         _ownedTokensCount[to].increment();
@@ -338,6 +337,8 @@ contract ERC721 is Pausable, ERC165 {
 }
 
 contract ERC721Enumerable is ERC165, ERC721 {
+    using SafeMath for uint256;
+
     // Mapping from owner to list of owned token IDs
     mapping(address => uint256[]) private _ownedTokens;
 
@@ -492,7 +493,7 @@ contract ERC721Enumerable is ERC165, ERC721 {
         }
 
         // This also deletes the contents at the last position of the array
-        _ownedTokens[from].length--;
+        _ownedTokens[from].length.sub(1);
 
         // Note that _ownedTokensIndex[tokenId] hasn't been cleared: it still points to the old slot (now occupied by
         // lastTokenId, or just over the end of the array if the token was the last one).
@@ -519,7 +520,7 @@ contract ERC721Enumerable is ERC165, ERC721 {
         _allTokensIndex[lastTokenId] = tokenIndex; // Update the moved token's index
 
         // This also deletes the contents at the last position of the array
-        _allTokens.length--;
+        _allTokens.length.sub(1);
         _allTokensIndex[tokenId] = 0;
     }
 }
@@ -544,7 +545,7 @@ contract ERC721Metadata is ERC721Enumerable {
         string memory name,
         string memory symbol,
         string memory baseTokenURI
-    ) public {
+    ) {
         // TODO: set instance var values
         _name = name;
         _symbol = symbol;
@@ -555,19 +556,23 @@ contract ERC721Metadata is ERC721Enumerable {
 
     // TODO: create external getter functions for name, symbol, and baseTokenURI
 
-    function getName() public returns (string memory) {
+    function getName() public view returns (string memory) {
         return _name;
     }
 
-    function getSymbol() public returns (string memory) {
+    function getSymbol() public view returns (string memory) {
         return _symbol;
     }
 
-    function getBaseTokenURI() public returns (string memory) {
+    function getBaseTokenURI() public view returns (string memory) {
         return _baseTokenURI;
     }
 
-    function tokenURI(uint256 tokenId) external view returns (string memory) {
+    function getTokenURI(uint256 tokenId)
+        external
+        view
+        returns (string memory)
+    {
         require(_exists(tokenId));
         return _tokenURIs[tokenId];
     }
