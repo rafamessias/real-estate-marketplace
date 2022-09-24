@@ -1,7 +1,43 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.21 <0.9.0;
 
-contract SolnSquareVerifier {
+import "../zokrates/code/square/verifier.sol";
+import "./ERC721Mintable.sol";
+
+contract SolnSquareVerifier is ERC721Mintable {
+    using Pairing for *;
+
+    struct Proof {
+        Pairing.G1Point a;
+        Pairing.G2Point b;
+        Pairing.G1Point c;
+    }
+
+    struct Solution {
+        uint256 input;
+        address account;
+    }
+
+    /**
+        @dev solution will be hashed (keccak256(input)) and added into the mapping
+     */
+    mapping(uint256 => Solution) solutions;
+
+    event SolutionAdded(uint256 indexed solution);
+
+    /**
+        @dev function to add the solutions to the array
+     */
+
+    function addTheSolutions(uint256 _solution) internal {}
+
+    function mintAfterVerification(address to, uint256 tokenId) public {}
+
+    function zkVerify(uint256[] memory input, Proof memory proof)
+        public
+        returns (uint256)
+    {}
+
     // TODO define a contract call to the zokrates generated solidity contract <Verifier> or <renamedVerifier>
     // TODO define another contract named SolnSquareVerifier that inherits from your ERC721Mintable class
     // TODO define a solutions struct that can hold an index & an address
