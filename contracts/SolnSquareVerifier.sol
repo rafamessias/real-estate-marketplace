@@ -4,15 +4,7 @@ pragma solidity >=0.4.21 <0.9.0;
 import "../zokrates/code/square/verifier.sol";
 import "./ERC721Mintable.sol";
 
-contract SolnSquareVerifier is ERC721Mintable {
-    using Pairing for *;
-
-    struct Proof {
-        Pairing.G1Point a;
-        Pairing.G2Point b;
-        Pairing.G1Point c;
-    }
-
+contract SolnSquareVerifier is ERC721Mintable, Verifier {
     struct Solution {
         uint256 input;
         address account;
@@ -33,10 +25,13 @@ contract SolnSquareVerifier is ERC721Mintable {
 
     function mintAfterVerification(address to, uint256 tokenId) public {}
 
-    function zkVerify(uint256[] memory input, Proof memory proof)
+    function zkVerify(Proof memory proof, uint256[2] memory input)
         public
-        returns (uint256)
-    {}
+        view
+        returns (bool)
+    {
+        return bool(Verifier.verifyTx(proof, input));
+    }
 
     // TODO define a contract call to the zokrates generated solidity contract <Verifier> or <renamedVerifier>
     // TODO define another contract named SolnSquareVerifier that inherits from your ERC721Mintable class
