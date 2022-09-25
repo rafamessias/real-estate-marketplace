@@ -168,7 +168,7 @@ contract ERC721 is Pausable, ERC165 {
     }
 
     //    @dev Approves another address to transfer the given token ID
-    function approve(address to, uint256 tokenId) public {
+    function approve(address to, uint256 tokenId) public whenNotPaused {
         address _tokenOwnerAddress = ownerOf(tokenId);
         require(
             to != _tokenOwnerAddress,
@@ -193,7 +193,7 @@ contract ERC721 is Pausable, ERC165 {
      * @param to operator address to set the approval
      * @param approved representing the status of the approval to be set
      */
-    function setApprovalForAll(address to, bool approved) public {
+    function setApprovalForAll(address to, bool approved) public whenNotPaused {
         require(to != msg.sender);
         _operatorApprovals[msg.sender][to] = approved;
         emit ApprovalForAll(msg.sender, to, approved);
@@ -217,7 +217,7 @@ contract ERC721 is Pausable, ERC165 {
         address from,
         address to,
         uint256 tokenId
-    ) public {
+    ) public whenNotPaused {
         require(_isApprovedOrOwner(msg.sender, tokenId));
 
         _transferFrom(from, to, tokenId);
@@ -227,7 +227,7 @@ contract ERC721 is Pausable, ERC165 {
         address from,
         address to,
         uint256 tokenId
-    ) public {
+    ) public whenNotPaused {
         safeTransferFrom(from, to, tokenId, "");
     }
 
@@ -236,7 +236,7 @@ contract ERC721 is Pausable, ERC165 {
         address to,
         uint256 tokenId,
         bytes memory _data
-    ) public {
+    ) public whenNotPaused {
         transferFrom(from, to, tokenId);
         require(_checkOnERC721Received(from, to, tokenId, _data));
     }
@@ -270,7 +270,7 @@ contract ERC721 is Pausable, ERC165 {
     }
 
     // @dev Internal function to mint a new token
-    function _mint(address to, uint256 tokenId) internal virtual {
+    function _mint(address to, uint256 tokenId) internal virtual whenNotPaused {
         require(to != address(0), "Invalid address");
         require(_exists(tokenId) == false, "Token Id already exists");
 
@@ -286,7 +286,7 @@ contract ERC721 is Pausable, ERC165 {
         address from,
         address to,
         uint256 tokenId
-    ) internal virtual {
+    ) internal virtual whenNotPaused {
         require(from == _tokenOwner[tokenId], "From should be token owner");
         require(to != address(0), "'To' should be valid address");
 
@@ -413,7 +413,7 @@ contract ERC721Enumerable is ERC165, ERC721 {
         address from,
         address to,
         uint256 tokenId
-    ) internal override {
+    ) internal override whenNotPaused {
         super._transferFrom(from, to, tokenId);
 
         _removeTokenFromOwnerEnumeration(from, tokenId);
@@ -427,7 +427,11 @@ contract ERC721Enumerable is ERC165, ERC721 {
      * @param to address the beneficiary that will own the minted token
      * @param tokenId uint256 ID of the token to be minted
      */
-    function _mint(address to, uint256 tokenId) internal override {
+    function _mint(address to, uint256 tokenId)
+        internal
+        override
+        whenNotPaused
+    {
         super._mint(to, tokenId);
 
         _addTokenToOwnerEnumeration(to, tokenId);
@@ -453,7 +457,10 @@ contract ERC721Enumerable is ERC165, ERC721 {
      * @param to address representing the new owner of the given token ID
      * @param tokenId uint256 ID of the token to be added to the tokens list of the given address
      */
-    function _addTokenToOwnerEnumeration(address to, uint256 tokenId) private {
+    function _addTokenToOwnerEnumeration(address to, uint256 tokenId)
+        private
+        whenNotPaused
+    {
         _ownedTokensIndex[tokenId] = _ownedTokens[to].length;
         _ownedTokens[to].push(tokenId);
     }
@@ -462,7 +469,10 @@ contract ERC721Enumerable is ERC165, ERC721 {
      * @dev Private function to add a token to this extension's token tracking data structures.
      * @param tokenId uint256 ID of the token to be added to the tokens list
      */
-    function _addTokenToAllTokensEnumeration(uint256 tokenId) private {
+    function _addTokenToAllTokensEnumeration(uint256 tokenId)
+        private
+        whenNotPaused
+    {
         _allTokensIndex[tokenId] = _allTokens.length;
         _allTokens.push(tokenId);
     }
@@ -477,6 +487,7 @@ contract ERC721Enumerable is ERC165, ERC721 {
      */
     function _removeTokenFromOwnerEnumeration(address from, uint256 tokenId)
         private
+        whenNotPaused
     {
         // To prevent a gap in from's tokens array, we store the last token in the index of the token to delete, and
         // then delete the last slot (swap and pop).
@@ -504,7 +515,10 @@ contract ERC721Enumerable is ERC165, ERC721 {
      * This has O(1) time complexity, but alters the order of the _allTokens array.
      * @param tokenId uint256 ID of the token to be removed from the tokens list
      */
-    function _removeTokenFromAllTokensEnumeration(uint256 tokenId) private {
+    function _removeTokenFromAllTokensEnumeration(uint256 tokenId)
+        private
+        whenNotPaused
+    {
         // To prevent a gap in the tokens array, we store the last token in the index of the token to delete, and
         // then delete the last slot (swap and pop).
 
@@ -526,9 +540,9 @@ contract ERC721Enumerable is ERC165, ERC721 {
 }
 
 contract ERC721Metadata is ERC721Enumerable {
-    string private _name;
-    string private _symbol;
-    string private _baseTokenURI;
+    string private s_name;
+    string private s_symbol;
+    string private s_baseTokenURI;
 
     mapping(uint256 => string) _tokenURIs;
 
@@ -542,45 +556,44 @@ contract ERC721Metadata is ERC721Enumerable {
      */
 
     constructor(
-        string memory name,
-        string memory symbol,
-        string memory baseTokenURI
+        string memory _name,
+        string memory _symbol,
+        string memory _baseTokenURI
     ) {
         // TODO: set instance var values
-        _name = name;
-        _symbol = symbol;
-        _baseTokenURI = baseTokenURI;
+        s_name = _name;
+        s_symbol = _symbol;
+        s_baseTokenURI = _baseTokenURI;
 
         _registerInterface(_INTERFACE_ID_ERC721_METADATA);
     }
 
     // TODO: create external getter functions for name, symbol, and baseTokenURI
 
-    function getName() public view returns (string memory) {
-        return _name;
+    function name() public view returns (string memory) {
+        return s_name;
     }
 
-    function getSymbol() public view returns (string memory) {
-        return _symbol;
+    function symbol() public view returns (string memory) {
+        return s_symbol;
     }
 
-    function getBaseTokenURI() public view returns (string memory) {
-        return _baseTokenURI;
+    function baseTokenURI() public view returns (string memory) {
+        return s_baseTokenURI;
     }
 
-    function getTokenURI(uint256 tokenId)
-        external
-        view
-        returns (string memory)
-    {
+    function tokenURI(uint256 tokenId) external view returns (string memory) {
         require(_exists(tokenId));
         return _tokenURIs[tokenId];
     }
 
-    function setTokenURI(uint256 tokenId) internal {
+    function setTokenURI(uint256 tokenId) internal whenNotPaused {
         require(_exists(tokenId));
         _tokenURIs[tokenId] = string(
-            bytes.concat(bytes(_baseTokenURI), bytes(Strings.toString(tokenId)))
+            bytes.concat(
+                bytes(s_baseTokenURI),
+                bytes(Strings.toString(tokenId))
+            )
         );
     }
 }
@@ -594,7 +607,12 @@ contract ERC721Mintable is ERC721Metadata {
         )
     {}
 
-    function mint(address to, uint256 tokenId) public onlyOwner returns (bool) {
+    function mint(address to, uint256 tokenId)
+        public
+        onlyOwner
+        whenNotPaused
+        returns (bool)
+    {
         super._mint(to, tokenId);
         super.setTokenURI(tokenId);
         return true;

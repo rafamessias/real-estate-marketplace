@@ -6,24 +6,49 @@ import "./ERC721Mintable.sol";
 
 contract SolnSquareVerifier is ERC721Mintable, Verifier {
     struct Solution {
-        uint256 input;
+        uint256 tokenId;
         address account;
     }
 
     /**
         @dev solution will be hashed (keccak256(input)) and added into the mapping
      */
-    mapping(uint256 => Solution) solutions;
+    mapping(bytes32 => Solution) solutions;
 
-    event SolutionAdded(uint256 indexed solution);
+    event SolutionAdded(
+        bytes32 indexed solution,
+        address indexed account,
+        uint256 tokenId
+    );
 
     /**
         @dev function to add the solutions to the array
      */
 
-    function addTheSolutions(uint256 _solution) internal {}
+    function addTheSolutions(bytes32 _solution, uint256 tokenId) internal {
+        solutions[_solution].tokenId = tokenId;
+        solutions[_solution].account = msg.sender;
 
-    function mintAfterVerification(address to, uint256 tokenId) public {}
+        emit SolutionAdded(_solution, msg.sender, tokenId);
+    }
+
+    function mintAfterVerification(
+        address to,
+        uint256 tokenId,
+        Proof memory proof,
+        uint256[2] memory input
+    ) public whenNotPaused {
+        bool zkVerfiedOK = zkVerify(proof, input);
+        require(zkVerfiedOK == true, "ZK verification is not satisfied.");
+
+        // if ZK OK, go ahead and mint
+        bool mintOK = mint(to, tokenId);
+        require(mintOK == true, "Mint should be done successfully");
+
+        // if mint OK, go ahead and save the ZK solution
+        bytes32 solution = keccak256(abi.encodePacked(input));
+        addTheSolutions(solution, tokenId);
+    }
 
     function zkVerify(Proof memory proof, uint256[2] memory input)
         public

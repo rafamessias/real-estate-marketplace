@@ -39,7 +39,7 @@ contract("TestERC721Mintable", (accounts) => {
     it("should return token uri", async function () {
       const uri =
         "https://s3-us-west-2.amazonaws.com/udacity-blockchain/capstone/";
-      const tokenURI = await this.contract.getTokenURI(0);
+      const tokenURI = await this.contract.tokenURI(0);
       assert.equal(tokenURI, `${uri}${0}`, "Should get the right TokenURI");
     });
 
