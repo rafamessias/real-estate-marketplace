@@ -9,7 +9,7 @@ contract("SolnSquareVerifier", (accounts) => {
   const wrongInputs = ["0x0001", "0x0001"];
 
   before(async () => {
-    contract = await SolnSquareVerifier.deployed({ from: account_one });
+    contract = await SolnSquareVerifier.deployed(20, { from: account_one });
   });
 
   describe("Try to mint NFT", () => {

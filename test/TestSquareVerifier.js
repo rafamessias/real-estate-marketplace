@@ -7,7 +7,7 @@ contract("SolnSquareVerifier", (accounts) => {
   const { proof, inputs } = proofJSON;
 
   before(async () => {
-    contract = await SolnSquareVerifier.deployed({ from: account_one });
+    contract = await SolnSquareVerifier.deployed(20, { from: account_one });
   });
 
   describe("ZK Verification", () => {

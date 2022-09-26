@@ -8,9 +8,7 @@ contract("TestERC721Mintable", (accounts) => {
     this.contract = await ERC721Mintable.deployed({ from: account_one });
 
     for (let x = 0; x < totalNFT; x++) {
-      const result = await this.contract.mint(account_one, x, {
-        from: account_one,
-      });
+      await this.contract.mint(account_one, x);
     }
   });
 
@@ -39,8 +37,13 @@ contract("TestERC721Mintable", (accounts) => {
     it("should return token uri", async function () {
       const uri =
         "https://s3-us-west-2.amazonaws.com/udacity-blockchain/capstone/";
-      const tokenURI = await this.contract.tokenURI(0);
-      assert.equal(tokenURI, `${uri}${0}`, "Should get the right TokenURI");
+      let tokenURI = "";
+      try {
+        tokenURI = await this.contract.tokenURI(0);
+      } catch (error) {
+        console.log(error);
+      }
+      assert.equal(tokenURI, `${uri}0`, "Should get the right TokenURI");
     });
 
     it("should transfer token from one owner to another", async function () {

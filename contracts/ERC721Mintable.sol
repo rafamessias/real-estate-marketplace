@@ -108,7 +108,7 @@ contract ERC165 {
      * @dev internal method for registering an interface
      */
     function _registerInterface(bytes4 interfaceId) internal {
-        require(interfaceId != 0xffffffff);
+        require(interfaceId != 0xffffffff, "Interface id is not 0xff");
         _supportedInterfaces[interfaceId] = true;
     }
 }
@@ -176,7 +176,8 @@ contract ERC721 is Pausable, ERC165 {
         );
         require(
             msg.sender == contractOwner() ||
-                isApprovedForAll(_tokenOwnerAddress, msg.sender)
+                isApprovedForAll(_tokenOwnerAddress, msg.sender),
+            "Sender is not Contract owner or is not approved"
         );
 
         _tokenApprovals[tokenId] = msg.sender;
@@ -194,7 +195,7 @@ contract ERC721 is Pausable, ERC165 {
      * @param approved representing the status of the approval to be set
      */
     function setApprovalForAll(address to, bool approved) public whenNotPaused {
-        require(to != msg.sender);
+        require(to != msg.sender, "Sender is not the to");
         _operatorApprovals[msg.sender][to] = approved;
         emit ApprovalForAll(msg.sender, to, approved);
     }
@@ -218,7 +219,10 @@ contract ERC721 is Pausable, ERC165 {
         address to,
         uint256 tokenId
     ) public whenNotPaused {
-        require(_isApprovedOrOwner(msg.sender, tokenId));
+        require(
+            _isApprovedOrOwner(msg.sender, tokenId),
+            "Is Approved or owner returned not"
+        );
 
         _transferFrom(from, to, tokenId);
     }
@@ -238,7 +242,10 @@ contract ERC721 is Pausable, ERC165 {
         bytes memory _data
     ) public whenNotPaused {
         transferFrom(from, to, tokenId);
-        require(_checkOnERC721Received(from, to, tokenId, _data));
+        require(
+            _checkOnERC721Received(from, to, tokenId, _data),
+            "Check on ERC721 Received"
+        );
     }
 
     /**
@@ -379,7 +386,10 @@ contract ERC721Enumerable is ERC165, ERC721 {
         view
         returns (uint256)
     {
-        require(index < balanceOf(owner));
+        require(
+            index < balanceOf(owner),
+            "Index should be less than balanceof"
+        );
         return _ownedTokens[owner][index];
     }
 
@@ -398,7 +408,10 @@ contract ERC721Enumerable is ERC165, ERC721 {
      * @return uint256 token ID at the given index of the tokens list
      */
     function tokenByIndex(uint256 index) public view returns (uint256) {
-        require(index < totalSupply());
+        require(
+            index < totalSupply(),
+            "index should be less than Total Supply"
+        );
         return _allTokens[index];
     }
 
@@ -583,12 +596,12 @@ contract ERC721Metadata is ERC721Enumerable {
     }
 
     function tokenURI(uint256 tokenId) external view returns (string memory) {
-        require(_exists(tokenId));
+        require(_exists(tokenId), "Token does not exists");
         return _tokenURIs[tokenId];
     }
 
     function setTokenURI(uint256 tokenId) internal whenNotPaused {
-        require(_exists(tokenId));
+        require(_exists(tokenId), "Token does not exists");
         _tokenURIs[tokenId] = string(
             bytes.concat(
                 bytes(s_baseTokenURI),

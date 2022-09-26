@@ -15,11 +15,19 @@ contract SolnSquareVerifier is ERC721Mintable, Verifier {
      */
     mapping(bytes32 => Solution) solutions;
 
+    Solution[] totalToken;
+
+    uint256 tokenSupply;
+
     event SolutionAdded(
         bytes32 indexed solution,
         address indexed account,
         uint256 tokenId
     );
+
+    constructor(uint256 _tokenSupply) {
+        tokenSupply = _tokenSupply;
+    }
 
     /**
         @dev function to add the solutions to the array
@@ -28,6 +36,8 @@ contract SolnSquareVerifier is ERC721Mintable, Verifier {
     function addTheSolutions(bytes32 _solution, uint256 tokenId) internal {
         solutions[_solution].tokenId = tokenId;
         solutions[_solution].account = msg.sender;
+
+        totalToken.push(Solution({tokenId: tokenId, account: msg.sender}));
 
         emit SolutionAdded(_solution, msg.sender, tokenId);
     }
@@ -38,15 +48,28 @@ contract SolnSquareVerifier is ERC721Mintable, Verifier {
         Proof memory proof,
         uint256[2] memory input
     ) public whenNotPaused {
+        //not mint over the total supply
+        require(
+            totalToken.length <= tokenSupply,
+            "Total supply already achieved"
+        );
+
         bool zkVerfiedOK = zkVerify(proof, input);
         require(zkVerfiedOK == true, "ZK verification is not satisfied.");
+
+        bytes32 solution = keccak256(abi.encodePacked(input));
+
+        //add only unique solution
+        require(
+            solutions[solution].account == address(0),
+            "This solution was used before"
+        );
 
         // if ZK OK, go ahead and mint
         bool mintOK = mint(to, tokenId);
         require(mintOK == true, "Mint should be done successfully");
 
         // if mint OK, go ahead and save the ZK solution
-        bytes32 solution = keccak256(abi.encodePacked(input));
         addTheSolutions(solution, tokenId);
     }
 
@@ -57,15 +80,4 @@ contract SolnSquareVerifier is ERC721Mintable, Verifier {
     {
         return bool(Verifier.verifyTx(proof, input));
     }
-
-    // TODO define a contract call to the zokrates generated solidity contract <Verifier> or <renamedVerifier>
-    // TODO define another contract named SolnSquareVerifier that inherits from your ERC721Mintable class
-    // TODO define a solutions struct that can hold an index & an address
-    // TODO define an array of the above struct
-    // TODO define a mapping to store unique solutions submitted
-    // TODO Create an event to emit when a solution is added
-    // TODO Create a function to add the solutions to the array and emit the event
-    // TODO Create a function to mint new NFT only after the solution has been verified
-    //  - make sure the solution is unique (has not been used before)
-    //  - make sure you handle metadata as well as tokenSuplly
 }
